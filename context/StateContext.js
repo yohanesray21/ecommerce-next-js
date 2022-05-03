@@ -11,7 +11,7 @@ export const StateContext = ({ children }) => {
   const [totalQuantities, setTotalQuantities] = useState(0);
   const [qty, setQty] = useState(1);
 
-  let FoundProduct;
+  let foundProduct;
   let index;
 
   const onAdd = (product, quantity) => {
@@ -19,7 +19,9 @@ export const StateContext = ({ children }) => {
       (item) => item._id === product._id
     );
 
-    setTotalPrice((prevPrice) => prevPrice + product.price * quantity);
+    setTotalPrice(
+      (prevTotalPrice) => prevTotalPrice + product.price * quantity
+    );
     setTotalQuantities((prevQuantities) => prevQuantities + quantity);
 
     if (checkProductInCart) {
@@ -40,9 +42,43 @@ export const StateContext = ({ children }) => {
     toast.success(`${qty} ${product.name} added to cart`);
   };
 
+  const onRemove = (product) => {
+    foundProduct = cartItems.find((item) => item._id === product._id);
+    const newCartItems = cartItems.filter((item) => item._id !== product._id);
+
+    setTotalPrice(
+      (prevTotalPrice) =>
+        prevTotalPrice - foundProduct.price * foundProduct.quantity
+    );
+    setTotalQuantities(
+      (prevTotalQuantities) => prevTotalQuantities - foundProduct.quantity
+    );
+    setCartItems(newCartItems);
+  };
+
   const toggleCartItemQuantity = (id, value) => {
-    FoundProduct = cartItems.find((item) => item._id === id);
+    foundProduct = cartItems.find((item) => item._id === id);
     index = cartItems.findIndex((product) => product._id === id);
+
+    const newCartItems = cartItems.filter((item) => item._id !== id);
+
+    if (value === "inc") {
+      setCartItems([
+        ...newCartItems,
+        { ...foundProduct, quantity: foundProduct.quantity + 1 },
+      ]);
+      setTotalPrice((prevTotalPrice) => prevTotalPrice + foundProduct.price);
+      setTotalQuantities((prevTotalQuantities) => prevTotalQuantities + 1);
+    } else if (value === "dec") {
+      if (foundProduct.quantity > 1) {
+        setCartItems([
+          ...newCartItems,
+          { ...foundProduct, quantity: foundProduct.quantity - 1 },
+        ]);
+        setTotalPrice((prevTotalPrice) => prevTotalPrice - foundProduct.price);
+        setTotalQuantities((prevQuantities) => prevQuantities - 1);
+      }
+    }
   };
 
   const incQty = () => {
@@ -68,6 +104,8 @@ export const StateContext = ({ children }) => {
         incQty,
         decQty,
         onAdd,
+        toggleCartItemQuantity,
+        onRemove,
       }}
     >
       {children}
