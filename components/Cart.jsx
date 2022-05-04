@@ -26,6 +26,8 @@ const Cart = () => {
     onRemove,
   } = useStateContext();
 
+  console.log(cartItems);
+
   const handleCheckout = async () => {
     const stripe = await getStripe();
 
